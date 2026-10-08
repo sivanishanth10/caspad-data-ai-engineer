@@ -19,9 +19,13 @@ The goal is to provide evidence-based recommendations for improving product page
 ## 2. Assumptions
 
 * A review with a rating of 1, 2, or 3 is treated as a low-rated review.
+
 * Missing review text is treated as an empty string during data cleaning.
+
 * Missing product category values are represented as `Unknown`.
+
 * Product information is maintained at one row per `Clothing ID`.
+
 * Reviewer age bands are defined as:
 
   * ≤20
@@ -30,7 +34,9 @@ The goal is to provide evidence-based recommendations for improving product page
   * 41–50
   * 51–60
   * 61+
+
 * For the LLM analysis, one main issue is assigned to each review using the fixed labels specified in the project.
+
 * The LLM output was manually checked on a random sample of 30 reviews.
 
 ---
@@ -39,7 +45,7 @@ The goal is to provide evidence-based recommendations for improving product page
 
 ### Data source
 
-The dataset used is the **Women’s E-Commerce Clothing Reviews** dataset from Kaggle.
+The dataset used is the **Women's E-Commerce Clothing Reviews** dataset from Kaggle.
 
 The dataset contains **23,486 reviews**.
 
@@ -139,7 +145,7 @@ for col in ["Division Name", "Department Name", "Class Name"]:
 | Department Name |           14 |
 | Class Name      |           14 |
 
-The project analysis does not require the missing review titles to be filled, so the `Title` column was retained without artificial values.
+The project analysis does not require the missing review titles to be filled, so the Title column was retained without artificial values.
 
 ### Product and review tables
 
@@ -147,14 +153,14 @@ The original dataset contains **23,486 review rows**.
 
 A separate product table was created at the `Clothing ID` grain.
 
-* Review table: **23,486 rows**
-* Product table: **1,206 unique Clothing IDs**
+* Review table: 23,486 rows
+* Product table: 1,206 unique Clothing IDs
 
 During the product consistency check, one Clothing ID had conflicting category information:
 
-* Clothing ID: `1119`
-* Department: `Jackets`
-* Class values: `Jackets` and `Outerwear`
+* Clothing ID: 1119
+* Department: Jackets
+* Class values: Jackets and Outerwear
 
 This conflict was identified and retained as a documented data-quality issue rather than silently changing the source information.
 
@@ -168,9 +174,9 @@ Three required checks were performed:
 
 Results:
 
-* Conflicting Clothing IDs: **1**
-* Invalid ratings: **0**
-* Invalid Recommended IND values: **0**
+* Conflicting Clothing IDs: 1
+* Invalid ratings: 0
+* Invalid Recommended IND values: 0
 
 ---
 
@@ -187,7 +193,7 @@ Results:
 | Dresses    |           4.15 |             80.8% |
 | Trend      |           3.82 |             73.9% |
 
-**Key observation:** Trend has the lowest average rating and recommendation rate among the departments, while Bottoms and Intimate have the strongest overall results.
+Key observation: Trend has the lowest average rating and recommendation rate among the departments, while Bottoms and Intimate have the strongest overall results.
 
 ### Classes with the most 1–2 star ratings
 
@@ -199,7 +205,7 @@ Results:
 | Sweaters |              155 |
 | Pants    |              124 |
 
-**Key observation:** Dresses, Knits, and Blouses account for the largest numbers of 1–2 star reviews and should receive particular attention.
+Key observation: Dresses, Knits, and Blouses account for the largest numbers of 1–2 star reviews and should receive particular attention.
 
 ### Reviewer age bands
 
@@ -212,7 +218,7 @@ Results:
 | 51–60    |           4.25 |
 | 61+      |           4.29 |
 
-**Key observation:** Average ratings are lowest for the 31–50 age groups and somewhat higher among the youngest and oldest groups.
+Key observations: Average ratings are lowest for the 31–50 age groups and somewhat higher among the youngest and oldest groups.
 
 ### Charts
 
@@ -231,7 +237,7 @@ The analysis includes charts for:
 
 ### Sampling
 
-There were **5,278 reviews rated 1–3 stars**.
+There were 5,278 reviews rated 1–3 stars.
 
 A random sample of **200** low-rated reviews was selected using a fixed random seed.
 
@@ -264,9 +270,9 @@ The same structured prompt format was used for the reviews.
 
 The LLM output was constrained to:
 
-text
+```text
 issue|fit
-
+```
 
 The raw LLM output was saved before final parsing and validation.
 
@@ -276,11 +282,11 @@ A random sample of 30 reviews was manually checked against the LLM predictions.
 
 Results:
 
-| Metric         |   Accuracy |
-| -------------- | ---------: |
-| Issue accuracy | 96.67% |
-| Fit accuracy   | 90.00% |
-| Exact accuracy | 90.00% |
+| Metric         | Accuracy |
+| -------------- | -------: |
+| Issue accuracy |   96.67% |
+| Fit accuracy   |   90.00% |
+| Exact accuracy |   90.00% |
 
 These results provide a manual estimate of classification quality on the validation sample.
 
@@ -344,7 +350,7 @@ I used Claude as a second AI-assisted development resource for:
 
 ### LLM used for the project analysis
 
-For Part C, the **Groq API with `openai/gpt-oss-20b`** was used to classify the selected low-rated customer reviews.
+For Part C, the Groq API with `openai/gpt-oss-20b` was used to classify the selected low-rated customer reviews.
 
 The classification prompt and structured output format were kept consistent across the sample.
 
@@ -352,9 +358,6 @@ Importantly, the LLM-generated classifications were not treated as automatically
 
 ---
 
-## 9. Optional extra
+## 9. Optional Extra
 
-Not completed.
-
-The optional step of running the LLM tagger across all low-rated reviews was not included because the required Parts A, B, and C were prioritized.
-
+The optional part was not completed because I reached the API usage limit while working on the project. The required parts of the project were completed.
