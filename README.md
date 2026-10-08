@@ -1,264 +1,76 @@
 # What Shoppers Say About Fit
 
-## Project Overview
+## 1. The problem in my own words
 
-This project analyzes women's clothing e-commerce reviews to understand whether low customer ratings are related to size and fit issues.
+An online women's clothing retailer is seeing increasing product returns. The main question is whether low-rated reviews are strongly related to size and fit problems.
 
-The analysis uses the **Women’s E-Commerce Clothing Reviews** dataset containing 23,486 reviews. The project covers:
+This project analyzes customer reviews to identify:
 
-- Data cleaning and validation
-- Product and review table creation
-- Rating and recommendation analysis
-- Low-rating analysis by product class
-- Rating analysis by reviewer age band
-- LLM-based classification of issues in low-rated reviews
-- Manual validation of 30 LLM classifications
-- Recommendations for product and listing improvements
+* Data quality and consistency issues
+* Departments and classes with lower ratings
+* Patterns in ratings across reviewer age groups
+* The main issues mentioned in low-rated reviews
+* Whether size/fit is a significant contributor to negative customer feedback
 
-## Tools Used
+The goal is to provide evidence-based recommendations for improving product pages, sizing information, and product presentation.
 
-- Python
-- Pandas
-- Jupyter Notebook
-- Groq API
-- LLM: `openai/gpt-oss-20b`
-- Matplotlib
-- CSV files for outputs
+---
 
-## Part A — Data Preparation and Validation
+## 2. Assumptions
 
-### Dataset
+* A review with a rating of 1, 2, or 3 is treated as a low-rated review.
+* Missing review text is treated as an empty string during data cleaning.
+* Missing product category values are represented as `Unknown`.
+* Product information is maintained at one row per `Clothing ID`.
+* Reviewer age bands are defined as:
 
-The raw dataset contains **23,486 review records** and 11 columns.
+  * ≤20
+  * 21–30
+  * 31–40
+  * 41–50
+  * 51–60
+  * 61+
+* For the LLM analysis, one main issue is assigned to each review using the fixed labels specified in the project.
+* The LLM output was manually checked on a random sample of 30 reviews.
 
-### Table Design
+---
 
-The data was separated into two tables:
+## 3. Data source and how to run
 
-**Product table**
+### Data source
 
-- Clothing ID
-- Division Name
-- Department Name
-- Class Name
+The dataset used is the **Women’s E-Commerce Clothing Reviews** dataset from Kaggle.
 
-Result: **1,402 product records**
+The dataset contains **23,486 reviews**.
 
-**Review table**
-
-- Review ID
-- Clothing ID
-- Age
-- Title
-- Review Text
-- Rating
-- Recommended IND
-- Positive Feedback Count
-
-Result: **23,486 review records**
-
-### Cleaning Rules
-
-- Missing `Review Text` values were replaced with an empty string because the review text is used for text analysis.
-- Missing `Division Name`, `Department Name`, and `Class Name` values were replaced with `Unknown`.
-- Missing `Title` values were retained because the title was not required for the main analysis.
-- No review rows were removed during cleaning.
-
-### Validation Checks
-
-**Clothing ID consistency**
-
-Each Clothing ID was checked to determine whether it mapped to a single department and class.
-
-One conflict was found:
-
-- Clothing ID **1119** has more than one Department Name and Class Name.
-
-This conflict was retained and reported rather than silently changing the source data.
-
-**Rating validation**
-
-- Expected range: 1–5
-- Invalid ratings found: **0**
-
-**Recommended IND validation**
-
-- Expected values: 0 or 1
-- Invalid values found: **0**
-
-### Part A Outputs
-
-- `products.csv`
-- `cleaned_reviews.csv`
-
-## Part B — Rating and Recommendation Analysis
-
-### 1. Average Rating and Recommendation Share
-
-The average rating and percentage of recommended reviews were calculated for each department and class.
-
-At the department level:
-
-| Department | Average Rating | Recommended (%) |
-| ---------- | -------------: | --------------: |
-| Bottoms    |           4.29 |          85.13% |
-| Dresses    |           4.15 |          80.82% |
-| Intimate   |           4.28 |          85.01% |
-| Jackets    |           4.26 |          83.62% |
-| Tops       |           4.17 |          81.52% |
-| Trend      |           3.82 |          73.95% |
-
-The **Trend** department has the lowest average rating and lowest recommendation share among the departments.
-
-### 2. Classes with the Most 1–2 Star Ratings
-
-The largest numbers of 1–2 star reviews were found in:
-
-| Class    | 1–2 Star Reviews |
-| -------- | ---------------: |
-| Dresses  |              689 |
-| Knits    |              506 |
-| Blouses  |              348 |
-| Sweaters |              155 |
-| Pants    |              124 |
-
-These are counts rather than percentages, so they reflect the volume of low-rated reviews.
-
-### 3. Rating by Reviewer Age Band
-
-| Age Band | Average Rating | Review Count |
-| -------- | -------------: | -----------: |
-| ≤20      |           4.32 |          152 |
-| 21–30    |           4.19 |        3,186 |
-| 31–40    |           4.17 |        7,912 |
-| 41–50    |           4.17 |        5,908 |
-| 51–60    |           4.25 |        3,891 |
-| 61+      |           4.29 |        2,437 |
-
-The largest number of reviews comes from the **31–40** age band.
-
-### Charts
-
-The following charts were created:
-
-1. Average Rating by Department
-2. Share Recommended by Department
-3. Low-Rating Count by Class
-4. Average Rating by Age Band
-
-### Part B Outputs
-
-- `department_summary.csv`
-- `class_summary.csv`
-- `low_rating_counts_by_class.csv`
-- `age_band_summary.csv`
-
-## Part C — LLM Review Classification
-
-### Sample Selection
-
-There were **5,278 reviews rated 3 or below** in the dataset.
-
-A random sample of **200 low-rated reviews** was selected using:
-
-```python
-low_rated.sample(n=200, random_state=42)
-```
-
-Of these 200 reviews:
-
-- **193** contained review text and were sent to the LLM.
-- **7** had missing review text and were excluded from LLM classification.
-
-### Classification Labels
-
-Each review was classified into exactly one main issue:
-
-- `size/fit`
-- `fabric/quality`
-- `looks different from photo`
-- `comfort`
-- `price`
-- `other`
-
-The LLM was also asked to identify whether the item runs:
-
-- `small`
-- `large`
-- `neither`
-
-### LLM Method
-
-The Groq API was used with the model:
-
-`openai/gpt-oss-20b`
-
-A single consistent prompt was used for all reviews. The model was instructed to return only:
+The downloaded raw CSV is stored locally under:
 
 ```text
-issue|fit
+data/Womens Clothing E-Commerce Clothing Reviews.csv
 ```
 
-Temperature was set to `0` to make the classifications more consistent.
+The raw dataset is not required to be committed to GitHub.
 
-The raw LLM responses were retained in `llm_tagged_193_reviews.csv`.
+### Main tools and packages
 
-### Manual Validation
+* Python
+* Pandas
+* Matplotlib
+* Jupyter Notebook
+* Groq API
+* python-dotenv
 
-A random sample of **30 reviews** was manually checked against the review text.
-
-Results:
-
-- **Issue accuracy: 83.33% (25/30)**
-- **Fit accuracy: 86.67% (26/30)**
-- **Overall exact-match accuracy: 80.0**
-
-## Recommendations
-
-Based on the rating analysis and the LLM classification of low-rated reviews, I would prioritize the following three product/listing changes:
-
-### 1. Improve Size and Fit Guidance
-
-Size/fit was the dominant issue in the low-rated review sample, particularly for Tops and Dresses.
-
-**Recommended change:**
-
-- Provide clearer fit descriptions.
-- Include garment measurements.
-- State whether an item tends to run small, large, or true to size.
-
-### 2. Add More Detailed Product Fit Information
-
-Reviews frequently mentioned specific fit problems involving length, bust, waist, armholes, and overall proportions.
-
-**Recommended change:**
-
-- Show model height and size worn.
-- Provide key garment measurements.
-- Add specific fit notes such as slim, relaxed, oversized, runs small, or runs large.
-
-### 3. Improve Fabric and Quality Information
-
-Fabric/quality was the second-largest issue category in the sample, with the highest counts in Tops and Dresses.
-
-**Recommended change:**
-
-- Make fabric composition more visible.
-- Describe thickness, stretch, and feel.
-- Include relevant care or shrinkage information where applicable.
-
-## Project Structure
+### Project structure
 
 ```text
 Caspad_Project/
 │
 ├── data/
-│   └── Womens Clothing E-Commerce Reviews.csv
+│   └── Womens Clothing E-Commerce Clothing Reviews.csv
 │
 ├── notebooks/
 │   ├── 01_part_a.ipynb
-│   ├── 02_part_b.ipynb
-│   └── 03_part_c.ipynb
+│   └── 03_part-c.ipynb
 │
 ├── outputs/
 │   ├── products.csv
@@ -268,20 +80,281 @@ Caspad_Project/
 │   ├── low_rating_counts_by_class.csv
 │   ├── age_band_summary.csv
 │   ├── llm_tagged_193_reviews.csv
-│   └── manual_30_check.csv
+│   ├── manual_30_check.csv
+│   └── issue_mix_by_department.csv
 │
-├── README.md
-├── requirements.txt
 ├── .env
-└── .gitignore
+├── .gitignore
+├── requirements.txt
+└── README.md
 ```
 
-## How to Reproduce
+### How to run
 
-1. Place the source CSV file in the `data/` folder.
-2. Run `01_part_a.ipynb` for data preparation and validation.
-3. Run `02_part_b.ipynb` for rating, recommendation, low-rating, and age-band analysis.
-4. Run `03_part_c.ipynb` for low-rated review sampling and LLM classification.
-5. The generated CSV results are saved in the `outputs/` folder.
+1. Download the dataset from Kaggle.
+2. Place the CSV inside the `data/` directory.
+3. Install the required Python packages.
+4. For Part C, add the Groq API key to `.env`:
 
-The Groq API key is stored in the `.env` file and is not included in the project outputs or source code.
+```text
+GROQ_API_KEY=your_api_key
+```
+
+5. Run the notebooks in the following order:
+
+   * `01_part_a.ipynb`
+   * Part B analysis cells
+   * `03_part-c.ipynb`
+
+The notebooks generate the required CSV outputs inside the `outputs/` directory.
+
+---
+
+## 4. Part A: Cleaning rules, affected rows, and checks
+
+### Cleaning rules
+
+The dataset contains 23,486 review records.
+
+Missing review text was replaced with an empty string:
+
+```python
+df["Review Text"] = df["Review Text"].fillna("")
+```
+
+Missing product category values were replaced with `Unknown`:
+
+```python
+for col in ["Division Name", "Department Name", "Class Name"]:
+    df[col] = df[col].fillna("Unknown")
+```
+
+### Missing values found
+
+| Column          | Missing rows |
+| --------------- | -----------: |
+| Review Text     |          845 |
+| Title           |        3,810 |
+| Division Name   |           14 |
+| Department Name |           14 |
+| Class Name      |           14 |
+
+The project analysis does not require the missing review titles to be filled, so the `Title` column was retained without artificial values.
+
+### Product and review tables
+
+The original dataset contains **23,486 review rows**.
+
+A separate product table was created at the `Clothing ID` grain.
+
+* Review table: **23,486 rows**
+* Product table: **1,206 unique Clothing IDs**
+
+During the product consistency check, one Clothing ID had conflicting category information:
+
+* Clothing ID: `1119`
+* Department: `Jackets`
+* Class values: `Jackets` and `Outerwear`
+
+This conflict was identified and retained as a documented data-quality issue rather than silently changing the source information.
+
+### Validation checks
+
+Three required checks were performed:
+
+1. Each Clothing ID was checked for conflicting Department/Class values.
+2. Ratings were checked to ensure they were between 1 and 5.
+3. Recommended IND was checked to ensure it contained only 0 and 1.
+
+Results:
+
+* Conflicting Clothing IDs: **1**
+* Invalid ratings: **0**
+* Invalid Recommended IND values: **0**
+
+---
+
+## 5. Part B: Key numbers and charts
+
+### Department-level results
+
+| Department | Average Rating | Share Recommended |
+| ---------- | -------------: | ----------------: |
+| Bottoms    |           4.29 |             85.1% |
+| Intimate   |           4.28 |             85.0% |
+| Jackets    |           4.26 |             83.6% |
+| Tops       |           4.17 |             81.5% |
+| Dresses    |           4.15 |             80.8% |
+| Trend      |           3.82 |             73.9% |
+
+**Key observation:** Trend has the lowest average rating and recommendation rate among the departments, while Bottoms and Intimate have the strongest overall results.
+
+### Classes with the most 1–2 star ratings
+
+| Class    | Low-rating count |
+| -------- | ---------------: |
+| Dresses  |              689 |
+| Knits    |              506 |
+| Blouses  |              348 |
+| Sweaters |              155 |
+| Pants    |              124 |
+
+**Key observation:** Dresses, Knits, and Blouses account for the largest numbers of 1–2 star reviews and should receive particular attention.
+
+### Reviewer age bands
+
+| Age Band | Average Rating |
+| -------- | -------------: |
+| ≤20      |           4.32 |
+| 21–30    |           4.19 |
+| 31–40    |           4.17 |
+| 41–50    |           4.17 |
+| 51–60    |           4.25 |
+| 61+      |           4.29 |
+
+**Key observation:** Average ratings are lowest for the 31–50 age groups and somewhat higher among the youngest and oldest groups.
+
+### Charts
+
+The analysis includes charts for:
+
+* Average rating by department
+* Share recommended by department
+* Classes with the most 1–2 star ratings
+* Average rating by reviewer age band
+* Average rating by class
+* Share recommended by class
+
+---
+
+## 6. Part C: LLM tagging and validation
+
+### Sampling
+
+There were **5,278 reviews rated 1–3 stars**.
+
+A random sample of **200** low-rated reviews was selected using a fixed random seed.
+
+Of these:
+
+* 200 reviews were sampled
+* 7 had missing review text
+* 193 reviews had usable text and were sent for LLM classification
+
+### LLM classification
+
+The LLM was asked to assign:
+
+**Main issue**
+
+* size/fit
+* fabric/quality
+* looks different from photo
+* comfort
+* price
+* other
+
+**Fit**
+
+* small
+* large
+* neither
+
+The same structured prompt format was used for the reviews.
+
+The LLM output was constrained to:
+
+text
+issue|fit
+
+
+The raw LLM output was saved before final parsing and validation.
+
+### Manual validation
+
+A random sample of 30 reviews was manually checked against the LLM predictions.
+
+Results:
+
+| Metric         |   Accuracy |
+| -------------- | ---------: |
+| Issue accuracy | 96.67% |
+| Fit accuracy   | 90.00% |
+| Exact accuracy | 90.00% |
+
+These results provide a manual estimate of classification quality on the validation sample.
+
+### Issue mix
+
+Across the 193 classified reviews, the dominant issue was size/fit.
+
+The issue mix was also broken down by department and saved to:
+
+```text
+outputs/issue_mix_by_department.csv
+```
+
+The strongest signal is that size/fit problems are substantially more common than the other issue categories in the low-rated sample.
+
+---
+
+## 7. Limitations and what next
+
+### Limitations
+
+* The LLM analysis used 193 reviews with usable text rather than all 5,278 low-rated reviews.
+* The manual accuracy check used only 30 reviews, so the reported accuracy should not be treated as a population-wide accuracy estimate.
+* A review may mention multiple problems, but the classification assigns one main issue.
+* The dataset is historical and may not represent current customer behavior.
+* The analysis identifies associations in customer feedback but does not prove that a particular issue directly causes product returns.
+
+### What I would do next
+
+If more time and production data were available, I would:
+
+1. Compare the identified issues with actual return reasons.
+2. Analyze issue patterns at the individual product level.
+3. Increase the manual validation sample.
+4. Monitor issue trends over time after product-page or sizing changes.
+
+---
+
+## 8. How I used AI tools
+
+AI tools were used as development and productivity support during the project.
+
+### ChatGPT
+
+I used ChatGPT to:
+
+* Clarify project requirements and organize the implementation steps.
+* Review Python/Pandas logic during development.
+* Help troubleshoot coding and API-related issues.
+* Improve explanations and documentation.
+* Discuss potential edge cases and validation approaches.
+
+### Claude
+
+I used Claude as a second AI-assisted development resource for:
+
+* Reviewing implementation approaches.
+* Cross-checking code and reasoning.
+* Helping identify potential issues during development.
+* Improving clarity of technical explanations.
+
+### LLM used for the project analysis
+
+For Part C, the **Groq API with `openai/gpt-oss-20b`** was used to classify the selected low-rated customer reviews.
+
+The classification prompt and structured output format were kept consistent across the sample.
+
+Importantly, the LLM-generated classifications were not treated as automatically correct. A manually reviewed sample of 30 reviews was used to measure issue, fit, and exact-match accuracy.
+
+---
+
+## 9. Optional extra
+
+Not completed.
+
+The optional step of running the LLM tagger across all low-rated reviews was not included because the required Parts A, B, and C were prioritized.
+
