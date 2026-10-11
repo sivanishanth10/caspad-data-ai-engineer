@@ -360,4 +360,6 @@ Importantly, the LLM-generated classifications were not treated as automatically
 
 ## 9. Optional Extra
 
-The optional part was not completed because I reached the API usage limit while working on the project. The required parts of the project were completed.
+### 9. Optional Extra
+
+The optional extra was not completed within the available time. I prioritized completing Parts A, B, and C and validating the results. In Part C, processing 193 reviews through the LLM required additional time due to API usage limits and processing constraints. Therefore, I focused on completing the required analysis, manually validating 30 reviews, and documenting the results accurately.
