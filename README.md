@@ -285,7 +285,7 @@ Results:
 | Metric         | Accuracy |
 | -------------- | -------: |
 | Issue accuracy |   96.67% |
-| Fit accuracy   |   90.00% |
+| Fit accuracy   |   93.33% |
 | Exact accuracy |   90.00% |
 
 These results provide a manual estimate of classification quality on the validation sample.
